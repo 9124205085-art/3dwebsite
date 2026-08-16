@@ -1,24 +1,24 @@
 import { useMemo } from 'react'
 import { Instances, Instance } from '@react-three/drei'
 import { GlowingRunes, type RuneAnchor } from './GlowingRunes'
+import { useQuality } from './quality'
+import { HEART, HEART_CLEARING_RADIUS } from './theme'
 
-const GRID_COLS = 12
-const GRID_ROWS = 14
 const SPACING_X = 5.5
 const SPACING_Z = 5.1
 const PATH_CLEARANCE = 2.7
-const RUNE_COUNT = 7
+const Z_SHIFT = -6
 
 const TRUNK = {
   args: [0.1, 0.17, 1.2, 6] as const,
   y: 0.6,
-  color: '#3a3228',
+  color: '#4a4034',
 }
 
 const FOLIAGE = [
-  { args: [1.05, 1.85, 6] as const, y: 1.52, color: '#1c2a22' },
-  { args: [0.76, 1.42, 6] as const, y: 2.22, color: '#24352b' },
-  { args: [0.46, 1.08, 6] as const, y: 2.82, color: '#1a2c24' },
+  { args: [1.05, 1.85, 6] as const, y: 1.52, color: '#2a3d32' },
+  { args: [0.76, 1.42, 6] as const, y: 2.22, color: '#324a3c' },
+  { args: [0.46, 1.08, 6] as const, y: 2.82, color: '#283d32' },
 ] as const
 
 type TreePlacement = {
@@ -54,17 +54,29 @@ export function LowPolyTree({
   )
 }
 
-function generateTreePlacements(): TreePlacement[] {
+function generateTreePlacements(
+  cols: number,
+  rows: number,
+): TreePlacement[] {
   const trees: TreePlacement[] = []
+  const clearingRadiusSq = HEART_CLEARING_RADIUS * HEART_CLEARING_RADIUS
 
-  for (let i = 0; i < GRID_COLS; i++) {
-    for (let j = 0; j < GRID_ROWS; j++) {
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
       const x =
-        (i - (GRID_COLS - 1) / 2) * SPACING_X + (Math.random() - 0.5) * 2.3
+        (i - (cols - 1) / 2) * SPACING_X + (Math.random() - 0.5) * 2.3
       const z =
-        (j - (GRID_ROWS - 1) / 2) * SPACING_Z + (Math.random() - 0.5) * 2.1
+        (j - (rows - 1) / 2) * SPACING_Z +
+        Z_SHIFT +
+        (Math.random() - 0.5) * 2.1
 
-      if (Math.abs(x) < PATH_CLEARANCE) continue
+      const dx = x - HEART.x
+      const dz = z - HEART.z
+      if (dx * dx + dz * dz < clearingRadiusSq) continue
+
+      const approach =
+        z < -16 ? PATH_CLEARANCE + Math.min(8, (-16 - z) * 0.5) : PATH_CLEARANCE
+      if (Math.abs(x) < approach && z > HEART.z + 4) continue
 
       trees.push({
         position: [x, 0, z],
@@ -81,18 +93,24 @@ function generateTreePlacements(): TreePlacement[] {
   return trees
 }
 
-function pickRuneAnchors(trees: TreePlacement[]): RuneAnchor[] {
+function pickRuneAnchors(
+  trees: TreePlacement[],
+  runeCount: number,
+): RuneAnchor[] {
   const nearPath = trees
-    .filter((tree) => Math.abs(tree.position[0]) < 6.8)
+    .filter(
+      (tree) =>
+        Math.abs(tree.position[0]) < 6.8 && tree.position[2] > HEART.z + 8,
+    )
     .sort((a, b) => a.position[2] - b.position[2])
 
   if (nearPath.length === 0) return []
 
-  const step = Math.max(1, Math.floor(nearPath.length / RUNE_COUNT))
+  const step = Math.max(1, Math.floor(nearPath.length / runeCount))
 
   return nearPath
     .filter((_, index) => index % step === 0)
-    .slice(0, RUNE_COUNT)
+    .slice(0, runeCount)
     .map((tree) => ({
       position: tree.position,
       scale: tree.scale,
@@ -101,8 +119,17 @@ function pickRuneAnchors(trees: TreePlacement[]): RuneAnchor[] {
 }
 
 export function Forest() {
-  const trees = useMemo(generateTreePlacements, [])
-  const runeAnchors = useMemo(() => pickRuneAnchors(trees), [trees])
+  const { treeCols, treeRows, runeCount } = useQuality()
+  const trees = useMemo(
+    () => generateTreePlacements(treeCols, treeRows),
+    [treeCols, treeRows],
+  )
+  const runeAnchors = useMemo(
+    () => pickRuneAnchors(trees, runeCount),
+    [trees, runeCount],
+  )
+
+  if (trees.length === 0) return null
 
   return (
     <group>

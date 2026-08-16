@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MeshStandardMaterial } from 'three'
-import { ACCENT_COLOR } from './Fireflies'
+import { ACCENT_COLOR } from './theme'
 
 export type RuneAnchor = {
   position: [number, number, number]

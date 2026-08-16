@@ -2,13 +2,14 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useScroll } from '@react-three/drei'
 import { MathUtils, Vector3 } from 'three'
+import { HEART, scrollState, smoothstep } from './theme'
 
-export const CAMERA_START = { x: 0, y: 5, z: 32 } as const
+export const CAMERA_START = { x: 0, y: 5.5, z: 28 } as const
 
 const START_Z = CAMERA_START.z
-const END_Z = -28
+const END_Z = -22
 const BASE_Y = CAMERA_START.y
-const LOOK_AHEAD = 16
+const LOOK_AHEAD = 14
 
 const PARALLAX_X = 0.7
 const PARALLAX_Y = 0.28
@@ -22,19 +23,29 @@ export function CameraRig() {
   const desiredPosition = useRef(
     new Vector3(CAMERA_START.x, CAMERA_START.y, CAMERA_START.z),
   )
-  const desiredLook = useRef(new Vector3(0, 1.6, START_Z - LOOK_AHEAD))
-  const lookTarget = useRef(new Vector3(0, 1.6, START_Z - LOOK_AHEAD))
+  const desiredLook = useRef(new Vector3(0, 1.8, START_Z - LOOK_AHEAD))
+  const lookTarget = useRef(new Vector3(0, 1.8, START_Z - LOOK_AHEAD))
 
   useFrame((state, delta) => {
-    const z = MathUtils.lerp(START_Z, END_Z, scroll.offset)
-    const parallaxX = state.pointer.x * PARALLAX_X
-    const parallaxY = state.pointer.y * PARALLAX_Y
+    const offset = scroll.offset
+    scrollState.offset = offset
 
-    desiredPosition.current.set(parallaxX, BASE_Y + parallaxY, z)
+    const z = MathUtils.lerp(START_Z, END_Z, offset)
+    const endBlend = smoothstep(0.72, 0.96, offset)
+    const parallaxFade = 1 - endBlend * 0.75
+
+    const parallaxX = state.pointer.x * PARALLAX_X * parallaxFade
+    const parallaxY = state.pointer.y * PARALLAX_Y * parallaxFade
+
+    desiredPosition.current.set(
+      parallaxX,
+      BASE_Y + parallaxY - endBlend * 0.2,
+      z,
+    )
     desiredLook.current.set(
-      parallaxX * LOOK_PARALLAX,
-      1.6 + parallaxY * 0.12,
-      z - LOOK_AHEAD,
+      MathUtils.lerp(parallaxX * LOOK_PARALLAX, HEART.x, endBlend),
+      MathUtils.lerp(1.8 + parallaxY * 0.12, 4.2, endBlend),
+      MathUtils.lerp(z - LOOK_AHEAD, HEART.z, endBlend),
     )
 
     const tPos = 1 - Math.exp(-POSITION_LERP * delta)
