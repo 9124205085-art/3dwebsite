@@ -6,7 +6,7 @@ import { HEART, HEART_CLEARING_RADIUS } from './theme'
 
 const SPACING_X = 5.5
 const SPACING_Z = 5.1
-const PATH_CLEARANCE = 2.7
+const PATH_CLEARANCE = 3.6
 const Z_SHIFT = -6
 
 const TRUNK = {

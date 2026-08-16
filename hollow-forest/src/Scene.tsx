@@ -1,32 +1,63 @@
 import { useFrame } from '@react-three/fiber'
-import { useScroll } from '@react-three/drei'
+import { Stars, useScroll } from '@react-three/drei'
 import { Bloom, EffectComposer } from '@react-three/postprocessing'
-import { FogExp2, MathUtils, UnsignedByteType } from 'three'
+import { Color, FogExp2, MathUtils, UnsignedByteType } from 'three'
 import { CameraRig } from './CameraRig'
 import { Fireflies } from './Fireflies'
 import { Forest } from './Forest'
 import { Ground } from './Ground'
 import { HeartOfTheForest } from './HeartOfTheForest'
-import { FOG_COLOR, FOG_DENSITY, smoothstep } from './theme'
+import { Road } from './Road'
+import { SchoolBus } from './SchoolBus'
+import { SchoolInterior } from './SchoolInterior'
+import { Storm } from './Storm'
+import { Students } from './Students'
+import {
+  FOG_COLOR,
+  FOG_DENSITY,
+  journeyState,
+  smoothstep,
+  stormState,
+} from './theme'
+
+const nightFog = new Color(FOG_COLOR)
+const hallFog = new Color('#f8e7c4')
+const nightBg = new Color('#070910')
+const hallBg = new Color('#fde8c8')
 
 function Atmosphere() {
   const scroll = useScroll()
 
   useFrame(({ scene }) => {
     const fog = scene.fog
+    const interior = journeyState.interior
     if (fog instanceof FogExp2) {
-      fog.density = MathUtils.lerp(
+      const base = MathUtils.lerp(
         FOG_DENSITY,
-        0.012,
+        0.01,
         smoothstep(0.74, 1, scroll.offset),
       )
+      fog.density = MathUtils.lerp(base, 0.0035, interior) * (1 - stormState.flash * 0.6)
+      fog.color.lerpColors(nightFog, hallFog, interior)
+    }
+    if (scene.background instanceof Color) {
+      scene.background.lerpColors(nightBg, hallBg, interior)
     }
   })
 
   return (
     <>
-      <color attach="background" args={[FOG_COLOR]} />
+      <color attach="background" args={['#070910']} />
       <fogExp2 attach="fog" args={[FOG_COLOR, FOG_DENSITY]} />
+      <Stars
+        radius={90}
+        depth={40}
+        count={900}
+        factor={2.4}
+        saturation={0}
+        fade
+        speed={0.2}
+      />
     </>
   )
 }
@@ -35,19 +66,29 @@ export function Scene() {
   return (
     <>
       <Atmosphere />
+      <Storm />
 
-      <ambientLight intensity={0.28} />
+      <ambientLight intensity={0.16} />
+      <hemisphereLight color="#7e93ad" groundColor="#121015" intensity={0.18} />
       <directionalLight
         position={[8, 18, 8]}
-        intensity={0.85}
-        color="#d7e2f2"
+        intensity={0.42}
+        color="#c9d6e8"
         castShadow
       />
-      <hemisphereLight color="#8aa0b8" groundColor="#1a1814" intensity={0.25} />
+      <directionalLight
+        position={[-10, 14, -18]}
+        intensity={0.38}
+        color="#9bb6d4"
+      />
 
       <Ground />
+      <Road />
       <Forest />
       <HeartOfTheForest />
+      <SchoolBus />
+      <Students />
+      <SchoolInterior />
       <Fireflies />
       <CameraRig />
 
@@ -59,7 +100,7 @@ export function Scene() {
         <Bloom
           luminanceThreshold={0.22}
           luminanceSmoothing={0.4}
-          intensity={1.15}
+          intensity={1.35}
           mipmapBlur
           radius={0.7}
         />

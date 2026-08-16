@@ -4,9 +4,17 @@ export const FOG_COLOR = '#05060a'
 export const FOG_DENSITY = 0.018
 
 export const HEART = { x: 0, y: 0, z: -36 } as const
-export const HEART_CLEARING_RADIUS = 14
+export const HEART_CLEARING_RADIUS = 32
+export const CASTLE_SCALE = 2.15
 
 export const scrollState = { offset: 0 }
+export const stormState = { flash: 0 }
+export const journeyState = {
+  busZ: 24,
+  gateOpen: 0,
+  students: 0,
+  interior: 0,
+}
 
 export function smoothstep(edge0: number, edge1: number, x: number) {
   const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)))

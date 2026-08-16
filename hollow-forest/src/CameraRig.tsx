@@ -2,14 +2,16 @@ import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useScroll } from '@react-three/drei'
 import { MathUtils, Vector3 } from 'three'
-import { HEART, scrollState, smoothstep } from './theme'
+import { HEART, journeyState, scrollState, smoothstep } from './theme'
 
 export const CAMERA_START = { x: 0, y: 5.5, z: 28 } as const
 
 const START_Z = CAMERA_START.z
-const END_Z = -22
+const END_Z = -18
 const BASE_Y = CAMERA_START.y
 const LOOK_AHEAD = 14
+const ORBIT_RADIUS = 26
+const ORBIT_HEIGHT = 9.5
 
 const PARALLAX_X = 0.7
 const PARALLAX_Y = 0.28
@@ -25,28 +27,69 @@ export function CameraRig() {
   )
   const desiredLook = useRef(new Vector3(0, 1.8, START_Z - LOOK_AHEAD))
   const lookTarget = useRef(new Vector3(0, 1.8, START_Z - LOOK_AHEAD))
+  const pathPos = useRef(new Vector3())
+  const orbitPos = useRef(new Vector3())
+  const insidePos = useRef(new Vector3())
+  const insideLook = useRef(new Vector3())
+  const arrivalPos = useRef(new Vector3())
+  const arrivalLook = useRef(new Vector3())
 
   useFrame((state, delta) => {
     const offset = scroll.offset
     scrollState.offset = offset
+    const interior = journeyState.interior
 
     const z = MathUtils.lerp(START_Z, END_Z, offset)
-    const endBlend = smoothstep(0.72, 0.96, offset)
-    const parallaxFade = 1 - endBlend * 0.75
+    const endBlend = smoothstep(0.68, 0.92, offset)
+    const explore = smoothstep(0.86, 1, offset) * (1 - interior) * 0.15
+    const parallaxFade = 1 - endBlend * 0.55
 
     const parallaxX = state.pointer.x * PARALLAX_X * parallaxFade
     const parallaxY = state.pointer.y * PARALLAX_Y * parallaxFade
 
-    desiredPosition.current.set(
+    pathPos.current.set(
       parallaxX,
-      BASE_Y + parallaxY - endBlend * 0.2,
+      BASE_Y + parallaxY + endBlend * 2.2,
       z,
     )
+
+    const yaw = state.pointer.x * Math.PI
+    const lift = MathUtils.clamp(state.pointer.y, -0.85, 1)
+    orbitPos.current.set(
+      HEART.x + Math.sin(yaw) * ORBIT_RADIUS,
+      ORBIT_HEIGHT + lift * 7,
+      HEART.z + Math.cos(yaw) * ORBIT_RADIUS,
+    )
+
+    desiredPosition.current.lerpVectors(pathPos.current, orbitPos.current, explore)
     desiredLook.current.set(
       MathUtils.lerp(parallaxX * LOOK_PARALLAX, HEART.x, endBlend),
-      MathUtils.lerp(1.8 + parallaxY * 0.12, 4.2, endBlend),
-      MathUtils.lerp(z - LOOK_AHEAD, HEART.z, endBlend),
+      MathUtils.lerp(1.8 + parallaxY * 0.12, 2.4, endBlend),
+      MathUtils.lerp(z - LOOK_AHEAD, HEART.z + 6.5, endBlend),
     )
+
+    const arrival = smoothstep(0.7, 0.93, offset) * (1 - interior)
+    arrivalPos.current.set(
+      state.pointer.x * 1.4,
+      4.5 + state.pointer.y * 0.7,
+      HEART.z + 16.8,
+    )
+    arrivalLook.current.set(0, 1.65, HEART.z + 6.2)
+    desiredPosition.current.lerp(arrivalPos.current, arrival)
+    desiredLook.current.lerp(arrivalLook.current, arrival)
+
+    insidePos.current.set(
+      0,
+      3.15 + interior * 1.7,
+      HEART.z + 8.4 - interior * 6.2,
+    )
+    insideLook.current.set(
+      0,
+      3.6 + interior * 1.5,
+      HEART.z + 2.4 - interior * 8.4,
+    )
+    desiredPosition.current.lerp(insidePos.current, interior)
+    desiredLook.current.lerp(insideLook.current, interior)
 
     const tPos = 1 - Math.exp(-POSITION_LERP * delta)
     const tLook = 1 - Math.exp(-LOOK_LERP * delta)

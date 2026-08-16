@@ -17,7 +17,7 @@ function Experience() {
           position: [CAMERA_START.x, CAMERA_START.y, CAMERA_START.z],
           fov: 55,
           near: 0.1,
-          far: 250,
+          far: 420,
         }}
         dpr={quality.dpr}
         shadows={quality.shadows}

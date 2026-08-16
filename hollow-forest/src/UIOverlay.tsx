@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react'
-import { scrollState, smoothstep } from './theme'
+import { journeyState, scrollState, smoothstep } from './theme'
 
 export function UIOverlay() {
   const introRef = useRef<HTMLDivElement>(null)
   const hintRef = useRef<HTMLParagraphElement>(null)
   const endingRef = useRef<HTMLDivElement>(null)
+  const hallRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     let frame = 0
@@ -13,7 +14,9 @@ export function UIOverlay() {
       const offset = scrollState.offset
       const intro = 1 - smoothstep(0.03, 0.16, offset)
       const hint = 1 - smoothstep(0.01, 0.08, offset)
-      const ending = smoothstep(0.78, 0.93, offset)
+      const ending =
+        smoothstep(0.78, 0.93, offset) * (1 - smoothstep(0.08, 0.45, journeyState.interior))
+      const hall = smoothstep(0.28, 0.7, journeyState.interior)
 
       if (introRef.current) {
         introRef.current.style.opacity = String(intro)
@@ -25,6 +28,10 @@ export function UIOverlay() {
       if (endingRef.current) {
         endingRef.current.style.opacity = String(ending)
         endingRef.current.style.transform = `translateY(${(1 - ending) * 16}px)`
+      }
+      if (hallRef.current) {
+        hallRef.current.style.opacity = String(hall)
+        hallRef.current.style.transform = `translateY(${(1 - hall) * 14}px)`
       }
 
       frame = requestAnimationFrame(update)
@@ -109,8 +116,9 @@ export function UIOverlay() {
           position: 'absolute',
           inset: 0,
           display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
           padding: '0 1.5rem 4rem',
           textAlign: 'center',
           opacity: 0,
@@ -126,7 +134,56 @@ export function UIOverlay() {
             textShadow: '0 0 22px rgba(255, 211, 106, 0.45)',
           }}
         >
-          It has been waiting.
+          Some doors only open at night.
+        </p>
+        <p
+          style={{
+            marginTop: '0.85rem',
+            fontSize: 11,
+            letterSpacing: '0.28em',
+            textTransform: 'uppercase',
+            color: 'rgba(255, 211, 106, 0.7)',
+          }}
+        >
+          Watch the last bus home
+        </p>
+      </div>
+
+      <div
+        ref={hallRef}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          padding: '0 1.5rem 4rem',
+          textAlign: 'center',
+          opacity: 0,
+        }}
+      >
+        <p
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: 'clamp(1.4rem, 4vw, 2.4rem)',
+            letterSpacing: '0.18em',
+            color: '#7c2d12',
+            textShadow: '0 0 18px rgba(255, 247, 237, 0.8)',
+          }}
+        >
+          Climb the steps.
+        </p>
+        <p
+          style={{
+            marginTop: '0.85rem',
+            fontSize: 11,
+            letterSpacing: '0.28em',
+            textTransform: 'uppercase',
+            color: '#b45309',
+          }}
+        >
+          This hall is the website
         </p>
       </div>
     </div>
