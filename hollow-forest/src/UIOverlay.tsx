@@ -16,7 +16,9 @@ export function UIOverlay() {
       const hint = 1 - smoothstep(0.01, 0.08, offset)
       const ending =
         smoothstep(0.78, 0.93, offset) * (1 - smoothstep(0.08, 0.45, journeyState.interior))
-      const hall = smoothstep(0.28, 0.7, journeyState.interior)
+      const hall =
+        smoothstep(0.28, 0.7, journeyState.interior) *
+        (1 - smoothstep(0.12, 0.55, journeyState.explore))
 
       if (introRef.current) {
         introRef.current.style.opacity = String(intro)
@@ -172,7 +174,7 @@ export function UIOverlay() {
             textShadow: '0 0 18px rgba(255, 247, 237, 0.8)',
           }}
         >
-          Climb the steps.
+          Climb the aisle.
         </p>
         <p
           style={{
@@ -183,7 +185,7 @@ export function UIOverlay() {
             color: '#b45309',
           }}
         >
-          This hall is the website
+          Move the mouse to look · Scroll to walk
         </p>
       </div>
     </div>

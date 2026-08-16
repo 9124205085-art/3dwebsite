@@ -14,6 +14,7 @@ export const journeyState = {
   gateOpen: 0,
   students: 0,
   interior: 0,
+  explore: 0,
 }
 
 export function smoothstep(edge0: number, edge1: number, x: number) {

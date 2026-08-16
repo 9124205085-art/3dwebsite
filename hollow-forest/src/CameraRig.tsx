@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useScroll } from '@react-three/drei'
 import { MathUtils, Vector3 } from 'three'
@@ -33,6 +33,21 @@ export function CameraRig() {
   const insideLook = useRef(new Vector3())
   const arrivalPos = useRef(new Vector3())
   const arrivalLook = useRef(new Vector3())
+  const explorePos = useRef(new Vector3())
+  const exploreLook = useRef(new Vector3())
+
+  useEffect(() => {
+    const onWheel = (event: WheelEvent) => {
+      if (journeyState.interior < 0.72) return
+      journeyState.explore = MathUtils.clamp(
+        journeyState.explore + event.deltaY * 0.00115,
+        0,
+        1,
+      )
+    }
+    window.addEventListener('wheel', onWheel, { passive: true })
+    return () => window.removeEventListener('wheel', onWheel)
+  }, [])
 
   useFrame((state, delta) => {
     const offset = scroll.offset
@@ -53,12 +68,12 @@ export function CameraRig() {
       z,
     )
 
-    const yaw = state.pointer.x * Math.PI
+    const orbitYaw = state.pointer.x * Math.PI
     const lift = MathUtils.clamp(state.pointer.y, -0.85, 1)
     orbitPos.current.set(
-      HEART.x + Math.sin(yaw) * ORBIT_RADIUS,
+      HEART.x + Math.sin(orbitYaw) * ORBIT_RADIUS,
       ORBIT_HEIGHT + lift * 7,
-      HEART.z + Math.cos(yaw) * ORBIT_RADIUS,
+      HEART.z + Math.cos(orbitYaw) * ORBIT_RADIUS,
     )
 
     desiredPosition.current.lerpVectors(pathPos.current, orbitPos.current, explore)
@@ -78,21 +93,33 @@ export function CameraRig() {
     desiredPosition.current.lerp(arrivalPos.current, arrival)
     desiredLook.current.lerp(arrivalLook.current, arrival)
 
-    insidePos.current.set(
-      0,
-      3.15 + interior * 1.7,
-      HEART.z + 8.4 - interior * 6.2,
-    )
-    insideLook.current.set(
-      0,
-      3.6 + interior * 1.5,
-      HEART.z + 2.4 - interior * 8.4,
-    )
+    insidePos.current.set(0, 4.7, HEART.z + 11.8)
+    insideLook.current.set(0, 5.4, HEART.z - 18)
+
     desiredPosition.current.lerp(insidePos.current, interior)
     desiredLook.current.lerp(insideLook.current, interior)
 
-    const tPos = 1 - Math.exp(-POSITION_LERP * delta)
-    const tLook = 1 - Math.exp(-LOOK_LERP * delta)
+    const free = smoothstep(0.7, 1, interior)
+    if (free > 0.01) {
+      const walk = journeyState.explore
+      const lookYaw = state.pointer.x * 1.2
+      const lookPitch = MathUtils.clamp(state.pointer.y, -0.7, 0.75) * 0.55
+      explorePos.current.set(
+        MathUtils.clamp(state.pointer.x * 3.2, -3.8, 3.8),
+        4.72,
+        MathUtils.lerp(HEART.z + 11.6, HEART.z - 16.5, walk),
+      )
+      exploreLook.current.set(
+        explorePos.current.x + Math.sin(lookYaw) * Math.cos(lookPitch) * 10,
+        explorePos.current.y + Math.sin(lookPitch) * 10,
+        explorePos.current.z - Math.cos(lookYaw) * Math.cos(lookPitch) * 10,
+      )
+      desiredPosition.current.lerp(explorePos.current, free)
+      desiredLook.current.lerp(exploreLook.current, free)
+    }
+
+    const tPos = 1 - Math.exp(-(POSITION_LERP + free * 5.5) * delta)
+    const tLook = 1 - Math.exp(-(LOOK_LERP + free * 6) * delta)
 
     state.camera.position.lerp(desiredPosition.current, tPos)
     lookTarget.current.lerp(desiredLook.current, tLook)

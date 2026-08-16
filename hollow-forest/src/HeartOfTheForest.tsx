@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { Sparkles } from '@react-three/drei'
 import { AdditiveBlending, DoubleSide, Group, Mesh } from 'three'
 import { useQuality } from './quality'
-import { HEART, SPARKLE_COLOR } from './theme'
+import { HEART, SPARKLE_COLOR, journeyState } from './theme'
 import { GlowingCastle } from './GlowingCastle'
 
 function LightBeam({
@@ -74,8 +74,10 @@ function FireflySwirl() {
 export function HeartOfTheForest() {
   const beamA = useRef<Mesh>(null)
   const beamB = useRef<Mesh>(null)
+  const extras = useRef<Group>(null)
 
   useFrame((state) => {
+    if (extras.current) extras.current.visible = journeyState.interior < 0.2
     const flicker = 0.08 + Math.sin(state.clock.elapsedTime * 1.8) * 0.02
     for (const beam of [beamA.current, beamB.current]) {
       if (!beam) continue
@@ -89,8 +91,9 @@ export function HeartOfTheForest() {
   return (
     <group>
       <GlowingCastle />
-      <FireflySwirl />
-      <group position={[HEART.x, HEART.y, HEART.z]}>
+      <group ref={extras}>
+        <FireflySwirl />
+        <group position={[HEART.x, HEART.y, HEART.z]}>
         <LightBeam
           meshRef={beamA}
           position={[0.5, 11.5, 0.3]}
@@ -107,6 +110,7 @@ export function HeartOfTheForest() {
           height={15}
           opacity={0.055}
         />
+        </group>
       </group>
     </group>
   )

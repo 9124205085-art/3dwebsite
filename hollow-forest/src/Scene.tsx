@@ -1,7 +1,8 @@
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Stars, useScroll } from '@react-three/drei'
 import { Bloom, EffectComposer } from '@react-three/postprocessing'
-import { Color, FogExp2, MathUtils, UnsignedByteType } from 'three'
+import { Color, FogExp2, Group, MathUtils, UnsignedByteType } from 'three'
 import { CameraRig } from './CameraRig'
 import { Fireflies } from './Fireflies'
 import { Forest } from './Forest'
@@ -21,12 +22,13 @@ import {
 } from './theme'
 
 const nightFog = new Color(FOG_COLOR)
-const hallFog = new Color('#f8e7c4')
+const hallFog = new Color('#d4cbbd')
 const nightBg = new Color('#070910')
-const hallBg = new Color('#fde8c8')
+const hallBg = new Color('#cfc6b8')
 
 function Atmosphere() {
   const scroll = useScroll()
+  const stars = useRef<Group>(null)
 
   useFrame(({ scene }) => {
     const fog = scene.fog
@@ -43,21 +45,24 @@ function Atmosphere() {
     if (scene.background instanceof Color) {
       scene.background.lerpColors(nightBg, hallBg, interior)
     }
+    if (stars.current) stars.current.visible = interior < 0.35
   })
 
   return (
     <>
       <color attach="background" args={['#070910']} />
       <fogExp2 attach="fog" args={[FOG_COLOR, FOG_DENSITY]} />
-      <Stars
-        radius={90}
-        depth={40}
-        count={900}
-        factor={2.4}
-        saturation={0}
-        fade
-        speed={0.2}
-      />
+      <group ref={stars}>
+        <Stars
+          radius={90}
+          depth={40}
+          count={900}
+          factor={2.4}
+          saturation={0}
+          fade
+          speed={0.2}
+        />
+      </group>
     </>
   )
 }
