@@ -4,10 +4,10 @@ import { GlowingRunes, type RuneAnchor } from './GlowingRunes'
 import { useQuality } from './quality'
 import { HEART, HEART_CLEARING_RADIUS } from './theme'
 
-const SPACING_X = 5.5
-const SPACING_Z = 5.1
+const SPACING_X = 3.8
+const SPACING_Z = 3.4
 const PATH_CLEARANCE = 3.6
-const Z_SHIFT = -6
+const Z_SHIFT = -4
 
 const TRUNK = {
   args: [0.1, 0.17, 1.2, 6] as const,
@@ -81,6 +81,28 @@ function generateTreePlacements(
       trees.push({
         position: [x, 0, z],
         scale: 0.72 + Math.random() * 0.7,
+        rotation: [
+          (Math.random() - 0.5) * 0.08,
+          Math.random() * Math.PI * 2,
+          (Math.random() - 0.5) * 0.06,
+        ],
+      })
+    }
+  }
+
+  for (const side of [-1, 1]) {
+    for (let k = 0; k < 36; k++) {
+      const z = 32 - k * 2.15 + (Math.random() - 0.5) * 0.8
+      if (z < HEART.z + 6) continue
+      const x =
+        side * (PATH_CLEARANCE + 1.15 + Math.random() * 4.8) +
+        (Math.random() - 0.5) * 0.7
+      const dx = x - HEART.x
+      const dz = z - HEART.z
+      if (dx * dx + dz * dz < clearingRadiusSq) continue
+      trees.push({
+        position: [x, 0, z],
+        scale: 0.85 + Math.random() * 0.65,
         rotation: [
           (Math.random() - 0.5) * 0.08,
           Math.random() * Math.PI * 2,

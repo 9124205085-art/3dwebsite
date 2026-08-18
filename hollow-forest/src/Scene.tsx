@@ -22,9 +22,10 @@ import {
 } from './theme'
 
 const nightFog = new Color(FOG_COLOR)
-const hallFog = new Color('#d4cbbd')
+const hallFog = new Color('#e0cba8')
 const nightBg = new Color('#070910')
-const hallBg = new Color('#cfc6b8')
+const hallBg = new Color('#c4a878')
+const whiteBg = new Color('#ffffff')
 
 function Atmosphere() {
   const scroll = useScroll()
@@ -33,6 +34,7 @@ function Atmosphere() {
   useFrame(({ scene }) => {
     const fog = scene.fog
     const interior = journeyState.interior
+    const whiteout = journeyState.whiteout
     if (fog instanceof FogExp2) {
       const base = MathUtils.lerp(
         FOG_DENSITY,
@@ -41,9 +43,16 @@ function Atmosphere() {
       )
       fog.density = MathUtils.lerp(base, 0.0035, interior) * (1 - stormState.flash * 0.6)
       fog.color.lerpColors(nightFog, hallFog, interior)
+      if (whiteout > 0) {
+        fog.color.lerp(whiteBg, whiteout)
+        fog.density = MathUtils.lerp(fog.density, 0.002, whiteout)
+      }
     }
     if (scene.background instanceof Color) {
       scene.background.lerpColors(nightBg, hallBg, interior)
+      if (whiteout > 0) {
+        scene.background.lerp(whiteBg, whiteout)
+      }
     }
     if (stars.current) stars.current.visible = interior < 0.35
   })

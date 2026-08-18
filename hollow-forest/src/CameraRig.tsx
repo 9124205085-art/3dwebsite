@@ -39,11 +39,28 @@ export function CameraRig() {
   useEffect(() => {
     const onWheel = (event: WheelEvent) => {
       if (journeyState.interior < 0.72) return
-      journeyState.explore = MathUtils.clamp(
-        journeyState.explore + event.deltaY * 0.00115,
-        0,
-        1,
-      )
+      const step = event.deltaY * 0.00105
+      if (step > 0) {
+        if (journeyState.feast < 1) {
+          journeyState.feast = MathUtils.clamp(journeyState.feast + step, 0, 1)
+        } else {
+          journeyState.whiteout = MathUtils.clamp(
+            journeyState.whiteout + step * 1.15,
+            0,
+            1,
+          )
+        }
+      } else {
+        if (journeyState.whiteout > 0) {
+          journeyState.whiteout = MathUtils.clamp(
+            journeyState.whiteout + step * 1.15,
+            0,
+            1,
+          )
+        } else {
+          journeyState.feast = MathUtils.clamp(journeyState.feast + step, 0, 1)
+        }
+      }
     }
     window.addEventListener('wheel', onWheel, { passive: true })
     return () => window.removeEventListener('wheel', onWheel)
@@ -101,18 +118,13 @@ export function CameraRig() {
 
     const free = smoothstep(0.7, 1, interior)
     if (free > 0.01) {
-      const walk = journeyState.explore
-      const lookYaw = state.pointer.x * 1.2
-      const lookPitch = MathUtils.clamp(state.pointer.y, -0.7, 0.75) * 0.55
-      explorePos.current.set(
-        MathUtils.clamp(state.pointer.x * 3.2, -3.8, 3.8),
-        4.72,
-        MathUtils.lerp(HEART.z + 11.6, HEART.z - 16.5, walk),
-      )
+      const lookYaw = state.pointer.x * 0.55
+      const lookPitch = MathUtils.clamp(state.pointer.y, -0.45, 0.45) * 0.28
+      explorePos.current.set(0, 4.72, HEART.z + 11.7)
       exploreLook.current.set(
-        explorePos.current.x + Math.sin(lookYaw) * Math.cos(lookPitch) * 10,
-        explorePos.current.y + Math.sin(lookPitch) * 10,
-        explorePos.current.z - Math.cos(lookYaw) * Math.cos(lookPitch) * 10,
+        Math.sin(lookYaw) * 3.2,
+        5.35 + Math.sin(lookPitch) * 2.4,
+        HEART.z + 2.2,
       )
       desiredPosition.current.lerp(explorePos.current, free)
       desiredLook.current.lerp(exploreLook.current, free)

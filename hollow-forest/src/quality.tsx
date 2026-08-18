@@ -26,8 +26,8 @@ function getSettings(width: number): QualitySettings {
   if (mobile) {
     return {
       mobile: true,
-      treeCols: 8,
-      treeRows: 11,
+      treeCols: 11,
+      treeRows: 16,
       pathSparkles: 70,
       forestSparkles: 36,
       swirlSparkles: 48,
@@ -40,8 +40,8 @@ function getSettings(width: number): QualitySettings {
 
   return {
     mobile: false,
-    treeCols: 12,
-    treeRows: 16,
+      treeCols: 16,
+      treeRows: 22,
     pathSparkles: 150,
     forestSparkles: 72,
     swirlSparkles: 100,

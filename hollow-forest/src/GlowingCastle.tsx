@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
+import { Text } from '@react-three/drei'
 import {
   CanvasTexture,
   Group,
@@ -233,47 +234,110 @@ function FrontGates() {
   const right = useRef<Group>(null)
 
   useFrame((_, delta) => {
-    const open = journeyState.gateOpen * 1.55
+    const open = journeyState.gateOpen * 1.45
     if (left.current) {
-      left.current.rotation.y = MathUtils.lerp(left.current.rotation.y, -open, 1 - Math.exp(-6 * delta))
+      left.current.rotation.y = MathUtils.lerp(left.current.rotation.y, -open, 1 - Math.exp(-5.5 * delta))
     }
     if (right.current) {
-      right.current.rotation.y = MathUtils.lerp(right.current.rotation.y, open, 1 - Math.exp(-6 * delta))
+      right.current.rotation.y = MathUtils.lerp(right.current.rotation.y, open, 1 - Math.exp(-5.5 * delta))
     }
   })
 
   return (
     <group>
-      <group ref={left} position={[-0.58, 0.82, 0.78]}>
-        <mesh position={[0.28, 0, 0]} castShadow>
-          <boxGeometry args={[0.58, 1.64, 0.1]} />
-          <meshStandardMaterial color="#3d2a12" roughness={0.7} metalness={0.12} />
+      <group ref={left} position={[-1.55, 2.05, 0.55]}>
+        <mesh position={[0.72, 0, 0]} castShadow>
+          <boxGeometry args={[1.44, 4.05, 0.12]} />
+          <meshStandardMaterial color="#1a120c" roughness={0.55} metalness={0.35} />
         </mesh>
-        <mesh position={[0.5, 0.12, 0.06]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial
-            color={SPARKLE_COLOR}
-            emissive={SPARKLE_COLOR}
-            emissiveIntensity={0.8}
-            metalness={0.6}
-          />
-        </mesh>
+        {[-0.9, 0, 0.9].map((y) => (
+          <mesh key={y} position={[0.72, y, 0.07]}>
+            <boxGeometry args={[1.2, 0.06, 0.04]} />
+            <meshStandardMaterial color="#3a2a18" metalness={0.5} roughness={0.4} />
+          </mesh>
+        ))}
       </group>
-      <group ref={right} position={[0.58, 0.82, 0.78]}>
-        <mesh position={[-0.28, 0, 0]} castShadow>
-          <boxGeometry args={[0.58, 1.64, 0.1]} />
-          <meshStandardMaterial color="#3d2a12" roughness={0.7} metalness={0.12} />
+      <group ref={right} position={[1.55, 2.05, 0.55]}>
+        <mesh position={[-0.72, 0, 0]} castShadow>
+          <boxGeometry args={[1.44, 4.05, 0.12]} />
+          <meshStandardMaterial color="#1a120c" roughness={0.55} metalness={0.35} />
         </mesh>
-        <mesh position={[-0.5, 0.12, 0.06]}>
-          <sphereGeometry args={[0.05, 8, 8]} />
-          <meshStandardMaterial
-            color={SPARKLE_COLOR}
-            emissive={SPARKLE_COLOR}
-            emissiveIntensity={0.8}
-            metalness={0.6}
-          />
-        </mesh>
+        {[-0.9, 0, 0.9].map((y) => (
+          <mesh key={y} position={[-0.72, y, 0.07]}>
+            <boxGeometry args={[1.2, 0.06, 0.04]} />
+            <meshStandardMaterial color="#3a2a18" metalness={0.5} roughness={0.4} />
+          </mesh>
+        ))}
       </group>
+    </group>
+  )
+}
+
+function TerrorArch({
+  stone,
+  stoneDark,
+}: {
+  stone: MeshStandardMaterial
+  stoneDark: MeshStandardMaterial
+}) {
+  return (
+    <group position={[0.1, 0, 4.15]}>
+      <mesh position={[-2.35, 3.5, 0]} castShadow material={stone}>
+        <boxGeometry args={[1.15, 7.1, 2.2]} />
+      </mesh>
+      <mesh position={[2.35, 3.5, 0]} castShadow material={stone}>
+        <boxGeometry args={[1.15, 7.1, 2.2]} />
+      </mesh>
+      <mesh position={[-1.35, 7.15, 0]} rotation={[0, 0, 0.62]} material={stoneDark}>
+        <boxGeometry args={[2.9, 0.85, 2.2]} />
+      </mesh>
+      <mesh position={[1.35, 7.15, 0]} rotation={[0, 0, -0.62]} material={stoneDark}>
+        <boxGeometry args={[2.9, 0.85, 2.2]} />
+      </mesh>
+      <mesh position={[0, 8.55, 0]} material={stoneDark}>
+        <boxGeometry args={[1.6, 0.7, 2.25]} />
+      </mesh>
+      <mesh position={[0, 9.55, 0]} material={stone}>
+        <coneGeometry args={[0.55, 1.7, 4]} />
+      </mesh>
+      {[-0.85, 0.85].map((x) => (
+        <mesh key={x} position={[x, 9.15, 0.2]} material={stoneDark}>
+          <coneGeometry args={[0.16, 0.9, 4]} />
+        </mesh>
+      ))}
+      <mesh position={[-2.35, 7.3, 0.9]} rotation={[0.2, 0.4, 0]} material={stoneDark}>
+        <dodecahedronGeometry args={[0.55, 0]} />
+      </mesh>
+      <mesh position={[2.35, 7.3, 0.9]} rotation={[-0.15, -0.3, 0]} material={stoneDark}>
+        <dodecahedronGeometry args={[0.5, 0]} />
+      </mesh>
+      <mesh position={[0, 8.55, 1.18]}>
+        <boxGeometry args={[3.6, 0.7, 0.12]} />
+        <meshStandardMaterial color="#120e0a" roughness={0.7} />
+      </mesh>
+      <Text
+        position={[0, 8.62, 1.28]}
+        fontSize={0.32}
+        color="#e8c56a"
+        anchorX="center"
+        anchorY="middle"
+        letterSpacing={0.14}
+        outlineWidth={0.012}
+        outlineColor="#1a1008"
+      >
+        HOLLOW ACADEMY
+      </Text>
+      <Text
+        position={[0, 8.28, 1.28]}
+        fontSize={0.12}
+        color="#c9a227"
+        anchorX="center"
+        anchorY="middle"
+        letterSpacing={0.22}
+      >
+        SCHOOL OF THE HOLLOW
+      </Text>
+      <FrontGates />
     </group>
   )
 }
@@ -553,44 +617,7 @@ export function GlowingCastle() {
         <boxGeometry args={[1.8, 1.25, 1.7]} />
       </mesh>
 
-      <group position={[0.15, 1.7, 2.55]}>
-        <mesh position={[-0.92, 1.15, 0]} castShadow material={stone}>
-          <boxGeometry args={[0.42, 2.3, 1.55]} />
-        </mesh>
-        <mesh position={[0.92, 1.15, 0]} castShadow material={stone}>
-          <boxGeometry args={[0.42, 2.3, 1.55]} />
-        </mesh>
-        <mesh position={[0, 2.22, 0]} castShadow material={stone}>
-          <boxGeometry args={[2.26, 0.55, 1.55]} />
-        </mesh>
-        <mesh
-          position={[0, 2.7, 0]}
-          rotation={[0, Math.PI / 4, 0]}
-          scale={[1.1, 1, 0.65]}
-          material={roof}
-        >
-          <coneGeometry args={[1.25, 1.35, 4]} />
-        </mesh>
-        <FrontGates />
-        <mesh position={[-0.92, 1.35, 0.8]} material={runeMaterial}>
-          <ringGeometry args={[0.1, 0.17, 6]} />
-        </mesh>
-        <mesh position={[0.92, 1.35, 0.8]} material={runeMaterial}>
-          <ringGeometry args={[0.07, 0.13, 6]} />
-        </mesh>
-        <GothicWindow
-          position={[-0.92, 1.55, 0.8]}
-          material={windowMaterial}
-          frame={frame}
-          scale={0.75}
-        />
-        <GothicWindow
-          position={[0.92, 1.55, 0.8]}
-          material={windowMaterial}
-          frame={frame}
-          scale={0.75}
-        />
-      </group>
+      <TerrorArch stone={stone} stoneDark={stoneDark} />
 
       <NeedleTurret position={[1.55, 9.55, -0.7]} stone={stone} roof={roof} />
       <NeedleTurret position={[-0.55, 9.55, 0.15]} stone={stone} roof={roof} />

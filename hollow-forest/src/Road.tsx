@@ -20,7 +20,7 @@ function SchoolSign() {
         anchorY="middle"
         letterSpacing={0.12}
       >
-        SCHOOL
+        HOLLOW
       </Text>
     </group>
   )
